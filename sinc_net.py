@@ -18,16 +18,20 @@ class SincConv1D(tf.keras.layers.Layer):
         """ Initialise the SincConv1D layer.
 
         Args:
-            num_kernels: Number of filters
+            num_kernels: Number of filters.
             kernel_size: Filter length.
             sample_rate: Sample rate. Defaults to 16000.
-            stride:
-            padding:
-            dilation:
-            min_low_hz:
-            min_band_hz:
+            stride: How many units to stride input. Default 1.
+            padding: What type of padding to use. Default 'VALID'.
+            dilation: How much units to dilate input by. Default 1.
+            min_low_hz: minimum value in frequency domain a band can be.
+            min_band_hz: minimum width in frequency domain a band can be.
         """
         super().__init__()
+        if kernel_size < 1:
+            raise ValueError("Kernel size must be at least one.")
+        if num_kernels < 1:
+            raise ValueError("Number of filters must be at least one.")
         self.num_kernels = num_kernels
         # force the filters to be odd (to be symmetric)
         self.kernel_size = kernel_size + 1 if not kernel_size % 2 else kernel_size
@@ -45,13 +49,13 @@ class SincConv1D(tf.keras.layers.Layer):
 
         mel = np.linspace(self.to_mel(low_hz),
                           self.to_mel(high_hz),
-                          self.num_kernels + 1)
+                          self.num_kernels + 1, dtype='float32')
         hz = self.to_hz(mel)
 
         # filter lower frequency
-        self.low_hz_ = tf.Variable(hz[:-1], trainable=True)
+        self.low_hz_ = tf.Variable(hz[:-1, None], trainable=True)
         # filter band frequency
-        self.band_hz_ = tf.Variable(np.diff(hz), trainable=True)
+        self.band_hz_ = tf.Variable(np.diff(hz)[:, None], trainable=True)
 
         # Hamming Window - only need to compute half of window
         n_lin = tf.linspace(0.0, float((self.kernel_size / 2) - 1),
@@ -63,6 +67,7 @@ class SincConv1D(tf.keras.layers.Layer):
         n = (self.kernel_size - 1) / 2.0
         # Due to symmetry, I only need half of the time axes
         self.n_ = 2 * math.pi * tf.range(-n, 0) / self.sample_rate
+        self.n_ = self.n_[None, :] # make n a matrix
 
     def build(self, input_shape):
         super().build(input_shape)
@@ -73,13 +78,16 @@ class SincConv1D(tf.keras.layers.Layer):
         Args:
             inputs: (batch_size, 1, n_samples) Batch of waveforms.
         Returns:
+            input filtered with sinc filter.
         """
+        # the low cutoff frequencies
         low = self.min_low_hz + tf.math.abs(self.low_hz_)
+        # the high cutoff frequencies constrained by Nyquist
         high = tf.clip_by_value(low +
                                 self.min_band_hz +
                                 tf.math.abs(self.band_hz_),
                                 self.min_low_hz, self.sample_rate / 2)
-        band = (high - low)[:, 0]
+        band = (high - low)
 
         f_times_t_low = tf.linalg.matmul(low, self.n_)
         f_times_t_high = tf.linalg.matmul(high, self.n_)
@@ -95,8 +103,9 @@ class SincConv1D(tf.keras.layers.Layer):
                                band_pass_right],
                               1)
 
-        band_pass = band_pass / (2 * band[:, None])
-        filters = band_pass.reshape(self.kernel_size,1, self.out_channels)
+        band_pass = band_pass / (2 * band)
+        filters = tf.reshape(band_pass,
+                             (self.num_kernels, 1, self.kernel_size))
 
         return tf.nn.conv1d(inputs, filters, stride=self.stride,
                             padding=self.padding, dilations=self.dilation,
