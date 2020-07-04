@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.keras import initializers
 import math
 import numpy as np
 
@@ -69,9 +70,6 @@ class SincConv1D(tf.keras.layers.Layer):
         self.n_ = 2 * math.pi * tf.range(-n, 0) / self.sample_rate
         self.n_ = self.n_[None, :] # make n a matrix
 
-    def build(self, input_shape):
-        super().build(input_shape)
-
     def call(self, inputs, **kwargs):
         """Do a forward pass of the SincConv1D layer.
 
@@ -111,5 +109,28 @@ class SincConv1D(tf.keras.layers.Layer):
                             padding=self.padding, dilations=self.dilation,
                             data_format='NCW')
 
-    def get_config(self):
-        super().get_config()
+
+class LayerNorm(tf.keras.layers.Layer):
+    def __init__(self, scale_initializer='ones', bias_initializer='zeros'):
+        super().__init__()
+        self.epsilon = 1e-6
+        self.scale_initializer = initializers.get(scale_initializer)
+        self.bias_initializer = initializers.get(bias_initializer)
+
+    def build(self, input_shape, **kwargs):
+        self.scale = self.add_weight(shape=(input_shape[-1],),
+                                     initializer=self.scale_initializer,
+                                     trainable=True,
+                                     name=f'{self.name}_scale')
+        self.bias = self.add_weight(shape=(input_shape[-1],),
+                                    initializer=self.bias_initializer,
+                                    trainable=True,
+                                    name=f'{self.name}_bias')
+        super().build(input_shape, **kwargs)
+
+    def call(self, inputs, **kwargs):
+        mean = tf.math.reduce_mean(inputs, axis=-1, keepdims=True)
+        std = tf.math.reduce_std(inputs, axis=-1, keepdims=True)
+        norm = tf.math.divide(tf.math.subtract(inputs, mean),
+                              (std + self.epsilon))
+        return tf.math.add(tf.math.multiply(norm, self.scale), self.bias)
