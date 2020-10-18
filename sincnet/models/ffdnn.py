@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Flatten, Dense
+from tensorflow.keras.layers import Input, Flatten, Dense, LayerNormalization
 
 from sincnet.layers.logmelspec import LogMelSpectrogram
 from .registry import register
@@ -11,6 +11,7 @@ def simple_be(params):
 
     inputs = Input((16000,))
     x = LogMelSpectrogram()(inputs)
+    x = LayerNormalization(axis=2, name='batch_norm')(x)
     x = Flatten()(x)
     x = Dense(512, activation='relu')(x)
     x = Dense(512, activation='relu')(x)
