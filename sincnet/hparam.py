@@ -37,7 +37,7 @@ def update_hparams(FLAGS, hparams):
 
 class Hyperparameters:
     def __init__(self) -> None:
-        self.num_classes = 10
+        self.num_classes = 12
         self.num_epochs = 200
         self.batch_size = 128
         self.lr = 0.1
