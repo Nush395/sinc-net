@@ -1,6 +1,8 @@
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
+from sincnet.data import AUDIO_SHAPE
+
 
 def data_loader(hparams, splits):
     """
@@ -18,13 +20,13 @@ def data_loader(hparams, splits):
 
     train = train.shuffle(1000)
     train = train.padded_batch(hparams.batch_size,
-                               padded_shapes=((16000, ), ()))
+                               padded_shapes=(AUDIO_SHAPE, ()))
 
     train = train.prefetch(tf.data.experimental.AUTOTUNE)
 
     validation = validation.padded_batch(
                     hparams.batch_size,
-                    padded_shapes=((16000, ), ()),
+                    padded_shapes=(AUDIO_SHAPE, ()),
                     padding_values=tf.constant(0, dtype=tf.int64))
     validation = validation.prefetch(tf.data.experimental.AUTOTUNE)
 

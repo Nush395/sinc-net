@@ -2,13 +2,14 @@ import tensorflow as tf
 from tensorflow.keras.layers import Input, Flatten, Dense, LayerNormalization
 
 from sincnet.layers.logmelspec import LogMelSpectrogram
+from sincnet.data import AUDIO_SHAPE
 from .registry import register
 
 
 @register("test_nn")
 def simple_be(hparams):
 
-    inputs = Input((16000,))
+    inputs = Input(AUDIO_SHAPE)
     x = LogMelSpectrogram()(inputs)
     x = LayerNormalization(axis=2, name='batch_norm')(x)
     x = Flatten()(x)
