@@ -6,8 +6,7 @@ from .registry import register
 
 
 @register("test_nn")
-def simple_be(params):
-    num_classes = 12
+def simple_be(hparams):
 
     inputs = Input((16000,))
     x = LogMelSpectrogram()(inputs)
@@ -16,6 +15,6 @@ def simple_be(params):
     x = Dense(512, activation='relu')(x)
     x = Dense(512, activation='relu')(x)
     x = Dense(512, activation='relu')(x)
-    y = Dense(num_classes)(x)
+    y = Dense(hparams.num_classes)(x)
     model = tf.keras.Model(inputs, y)
     return model

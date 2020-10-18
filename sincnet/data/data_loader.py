@@ -13,13 +13,13 @@ def data_loader(hparams, splits):
                                           download=True,
                                           as_supervised=True)
     train = train.map(lambda x, y: (tf.cast(x, dtype=tf.float32)/32767.0, y),
+                      num_parallel_calls=tf.data.experimental.AUTOTUNE)
     # apply augs here.
 
-    train.shuffle(1000)
+    train = train.shuffle(1000)
     train = train.padded_batch(hparams.batch_size,
                                padded_shapes=((16000, ), ()))
 
-                      num_parallel_calls=tf.data.experimental.AUTOTUNE)
     train = train.prefetch(tf.data.experimental.AUTOTUNE)
 
     validation = validation.padded_batch(
