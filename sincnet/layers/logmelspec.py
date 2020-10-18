@@ -8,7 +8,7 @@ class LogMelSpectrogram(tf.keras.layers.Layer):
                  sample_rate=16000,
                  fft_size=512,
                  hop_size=160,
-                 n_mels=128,
+                 n_mels=64,
                  f_min=0.0, f_max=None, **kwargs):
         super().__init__(**kwargs)
         self.sample_rate = sample_rate
