@@ -1,7 +1,7 @@
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
-from sincnet.data import AUDIO_SHAPE
+AUDIO_SHAPE = (16000,)
 
 
 def data_loader(hparams, splits):
