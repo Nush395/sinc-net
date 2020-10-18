@@ -1,19 +1,21 @@
+import tensorflow as tf
 import tensorflow_datasets as tfds
 
 
 from sincnet.models import get_model
+from sincnet.data import data_loader
 
 
 def train_network(hparams):
 
-    (train, validation), info = tfds.load(name=hparams.dataset,
-                                          data_dir=hparams.data_dir,
-                                          split=["train", "validation"],
-                                          with_info=True,
-                                          download=True)
+    (train, validation), info = data_loader(hparams,
+                                            splits=['train', 'validation'])
     train_size = info.splits['train'].num_examples
     print(train_size)
-
-    import ipdb; ipdb.set_trace()
     model = get_model(hparams)
-    pass
+
+    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+    model.compile(optimizer=tf.optimizers.Adam(),
+                  loss=loss,
+                  metrics=['accuracy'])
+    model.fit(train, validation_data=validation, epochs=2, verbose=1)
