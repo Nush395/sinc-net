@@ -1,7 +1,15 @@
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
+from tensorflow.data.experimental import AUTOTUNE
+
+
 AUDIO_SHAPE = (16000,)
+AUDIO_RANGE = tf.int16.max
+
+
+def scale_audio(x, y):
+    return tf.cast(x, dtype=tf.float32)/tf.cast(AUDIO_RANGE, tf.float32), y
 
 
 def data_loader(hparams, splits):
@@ -17,20 +25,19 @@ def data_loader(hparams, splits):
     ds_datasets = []
     for ds, split_name in zip(ds_tuples, splits):
         if split_name == "train":
-            ds = ds.map(lambda x, y: (tf.cast(x, dtype=tf.float32)/32767.0, y),
-                        num_parallel_calls=tf.data.experimental.AUTOTUNE)
+            ds = ds.map(scale_audio, num_parallel_calls=AUTOTUNE)
             # apply augs here.
 
             ds = ds.shuffle(1000)
             ds = ds.padded_batch(hparams.batch_size,
                                  padded_shapes=(AUDIO_SHAPE, ()))
 
-            ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
+            ds = ds.prefetch(AUTOTUNE)
         else:
             ds = ds.padded_batch(hparams.batch_size,
                                  padded_shapes=(AUDIO_SHAPE, ()),
                                  padding_values=tf.constant(0, dtype=tf.int64))
-            ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
+            ds = ds.prefetch(AUTOTUNE)
 
         ds_datasets.append(ds)
 
