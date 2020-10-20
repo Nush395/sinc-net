@@ -56,7 +56,7 @@ def parser():
         description='Runs experiments on SincNet',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument("--hparams", type=str, required=True)
+    parser.add_argument("--hparams", type=str, required=True, choices=_HPARAMS)
     parser.add_argument("--data_dir", type=str, required=True)
     parser.add_argument("--lr", default=None, type=float, help="learning rate")
     parser.add_argument("--output_dir", type=str, default="./")
