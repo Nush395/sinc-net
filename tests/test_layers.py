@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import unittest
 from statistics import mean, pstdev
-from layers import SincConv1D, LayerNorm
+from sincnet.layers.sinc import SincConv1D, LayerNorm
 
 
 class TestSincConvLayer(unittest.TestCase):
@@ -16,7 +16,7 @@ class TestSincConvLayer(unittest.TestCase):
         sinc_layer = SincConv1D(num_kernels, kernel_size)
 
         # then
-        self.assertEqual(sinc_layer.kernel_size, 3)
+        self.assertEqual(sinc_layer.kernel_size, 5)
 
     def test_layer_on_input(self):
         # given
