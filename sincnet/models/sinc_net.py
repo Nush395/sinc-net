@@ -12,7 +12,7 @@ def sincnet(hparams):
     """Baseline sincenet from M.Ravanelli paper."""
     inputs = Input(AUDIO_SHAPE)
     x = LayerNormalization()(inputs)
-    x = SincConv1D(80, 251)(x)
+    x = SincConv1D(80, 75)(x)
     # TODO: LeakyReLU alpha not specified in paper, see what it is in code.
     x = LeakyReLU(alpha=0.01)(x)
     x = LayerNormalization()(x)

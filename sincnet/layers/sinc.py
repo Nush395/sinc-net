@@ -105,9 +105,9 @@ class SincConv1D(tf.keras.layers.Layer):
         filters = tf.reshape(band_pass,
                              (self.num_kernels, 1, self.kernel_size))
 
-        return tf.nn.conv1d(inputs, filters, stride=self.stride,
-                            padding=self.padding, dilations=self.dilation,
-                            data_format='NCW')
+        return tf.nn.conv1d(tf.expand_dims(inputs, 1), filters,
+                            stride=self.stride, padding=self.padding,
+                            dilations=self.dilation, data_format='NCW')
 
 
 class LayerNorm(tf.keras.layers.Layer):
