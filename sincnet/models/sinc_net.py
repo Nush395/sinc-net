@@ -34,9 +34,3 @@ def sincnet(hparams):
     y = Dense(hparams.num_classes)(x)
     model = tf.keras.Model(inputs, y)
     return model
-
-
-
-
-
-
