@@ -68,15 +68,16 @@ class SincConv1D(tf.keras.layers.Layer):
         n = (self.kernel_size - 1) / 2.0
         # Due to symmetry, I only need half of the time axes
         self.n_ = 2 * math.pi * tf.range(-n, 0) / self.sample_rate
-        self.n_ = self.n_[None, :] # make n a matrix
+        self.n_ = self.n_[None, :]  # make n a matrix
 
     def call(self, inputs, **kwargs):
         """Do a forward pass of the SincConv1D layer.
 
         Args:
-            inputs: (batch_size, 1, n_samples) Batch of waveforms.
+            inputs: (batch_size, n_samples, 1) Batch of waveforms.
         Returns:
-            input filtered with sinc filter.
+            input filtered with sinc filter of shape
+            (batch_size, convolved_samples_size, num_kernels).
         """
         # the low cutoff frequencies
         low = self.min_low_hz + tf.math.abs(self.low_hz_)
@@ -103,11 +104,10 @@ class SincConv1D(tf.keras.layers.Layer):
 
         band_pass = band_pass / (2 * band)
         filters = tf.reshape(band_pass,
-                             (self.num_kernels, 1, self.kernel_size))
+                             (self.kernel_size, 1, self.num_kernels))
 
-        return tf.nn.conv1d(tf.expand_dims(inputs, 1), filters,
-                            stride=self.stride, padding=self.padding,
-                            dilations=self.dilation, data_format='NCW')
+        return tf.nn.conv1d(inputs, filters, stride=self.stride,
+                            padding=self.padding, dilations=self.dilation)
 
 
 class LayerNorm(tf.keras.layers.Layer):
