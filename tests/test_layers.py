@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import unittest
 from statistics import mean, pstdev
-from layers import SincConv1D, LayerNorm
+from sincnet.layers.sinc import SincConv1D, LayerNorm
 
 
 class TestSincConvLayer(unittest.TestCase):
@@ -16,13 +16,13 @@ class TestSincConvLayer(unittest.TestCase):
         sinc_layer = SincConv1D(num_kernels, kernel_size)
 
         # then
-        self.assertEqual(sinc_layer.kernel_size, 3)
+        self.assertEqual(sinc_layer.kernel_size, 5)
 
     def test_layer_on_input(self):
         # given
-        num_batches, num_samples = 3, 20
-        sample_audio = tf.random.uniform((num_batches, 1, num_samples), seed=5)
-        num_kernels, kernel_size = 4, 4
+        num_batches, wav_samples = 1, 20
+        sample_audio = tf.random.uniform((num_batches, wav_samples, 1), seed=5)
+        num_kernels, kernel_size = 3, 4
         sinc_layer = SincConv1D(num_kernels, kernel_size)
 
         # when

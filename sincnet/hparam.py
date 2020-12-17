@@ -51,6 +51,13 @@ def baseline():
     return hps
 
 
+@register
+def sincnet():
+    hps = Hyperparameters()
+    hps.model = "sincnet_baseline"
+    return hps
+
+
 def parser():
     parser = argparse.ArgumentParser(
         description='Runs experiments on SincNet',

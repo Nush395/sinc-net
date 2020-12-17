@@ -16,5 +16,6 @@ def train_network(hparams):
     model.compile(optimizer=tf.optimizers.Adam(),
                   loss=loss,
                   metrics=['accuracy'])
+    model.summary()
     model.fit(train, validation_data=validation, epochs=hparams.num_epochs,
               verbose=1)
